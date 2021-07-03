@@ -16,13 +16,24 @@ import re
 import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
+from importlib import metadata
 from typing import Dict, Iterable, List, Tuple
+
+try:
+    __version__ = metadata.version("zkeys")
+except metadata.PackageNotFoundError:
+    __version__ = "unknown"
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     parser.add_argument(
         "file",
