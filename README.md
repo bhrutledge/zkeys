@@ -20,6 +20,20 @@ Run `zkeys -h` to see usage.
 
 Install [tox](https://tox.readthedocs.io/).
 
+Run the linters, type checks, and tests on all supported Python versions, or a specific version:
+
+```sh
+tox
+
+tox -e py38
+```
+
+Auto-format the code:
+
+```sh
+tox -e format
+```
+
 Create and activate a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment) for [development](https://tox.readthedocs.io/en/latest/example/devenv.html):
 
 ```sh
