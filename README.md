@@ -18,18 +18,20 @@ Run `zkeys -h` to see usage.
 
 ## Developing
 
-Create and activate a [virtual environment](https://packaging.python.org/tutorials/installing-packages/#creating-and-using-virtual-environments).
+Install [tox](https://tox.readthedocs.io/).
 
-Make sure pip is up-to-date:
+Create and activate a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment) for [development](https://tox.readthedocs.io/en/latest/example/devenv.html):
 
 ```sh
-python3 -m pip install -U pip
+tox --devenv venv
+
+source venv/bin/activate
 ```
 
-Install this project in [development mode](https://setuptools.readthedocs.io/en/latest/userguide/quickstart.html#development-mode):
+Run the tests:
 
 ```sh
-python3 -m pip install -e .
+pytest
 ```
 
 ## Releasing
