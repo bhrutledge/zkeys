@@ -6,19 +6,21 @@ Requires Python 3.8 or newer.
 
 ## Installation
 
-Install the latest version from GitHub using [pipx](https://pypa.github.io/pipx/) (recommended) or [pip](https://pip.pypa.io/en/stable/):
+Install the latest release from [PyPI](https://pypi.org/project/zkeys/) using [pipx](https://pypa.github.io/pipx/) (recommended) or [pip](https://pip.pypa.io/en/stable/):
 
 ```sh
-pipx install git+https://github.com/bhrutledge/zkeys.git
+pipx install zkeys
 
-python3 -m pip install -U git+https://github.com/bhrutledge/zkeys.git
+python3 -m pip install -U zkeys
 ```
 
 Run `zkeys -h` to see usage.
 
 ## Developing
 
-Create and activate a [virtual environment](https://packaging.python.org/tutorials/installing-packages/#creating-and-using-virtual-environments), then make sure pip is up-to-date:
+Create and activate a [virtual environment](https://packaging.python.org/tutorials/installing-packages/#creating-and-using-virtual-environments).
+
+Make sure pip is up-to-date:
 
 ```sh
 python3 -m pip install -U pip
@@ -46,8 +48,6 @@ Choose a version number and tag the release:
 version=0.1.0
 
 git tag -m "Release $version" $version
-
-git push origin $version
 ```
 
 Create the [source distribution](https://packaging.python.org/glossary/#term-Source-Distribution-or-sdist) and [wheel](https://packaging.python.org/glossary/#term-Built-Distribution) packages:
@@ -60,8 +60,14 @@ python3 -m build
 python3 -m twine check --strict dist/*
 ```
 
-Publish the release to [PyPI](https://pypi.org/):
+Publish the release to PyPI:
 
 ```sh
 python3 -m twine upload dist/*
+```
+
+Push the release tag to GitHub:
+
+```sh
+git push origin $version
 ```
