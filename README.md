@@ -14,6 +14,8 @@ pipx install zkeys
 python3 -m pip install -U zkeys
 ```
 
+To install the latest version from GitHub, replace `zkeys` with `git+https://github.com/bhrutledge/zkeys.git`.
+
 Run `zkeys -h` to see usage.
 
 ## Developing
@@ -50,14 +52,6 @@ pytest
 
 ## Releasing
 
-Activate the virtual environment.
-
-Install the packages required for releasing:
-
-```sh
-python3 -m install -U build twine
-```
-
 Choose a version number and tag the release:
 
 ```sh
@@ -66,20 +60,10 @@ version=0.1.0
 git tag -m "Release $version" $version
 ```
 
-Create the [source distribution](https://packaging.python.org/glossary/#term-Source-Distribution-or-sdist) and [wheel](https://packaging.python.org/glossary/#term-Built-Distribution) packages:
+Create the [source distribution](https://packaging.python.org/glossary/#term-Source-Distribution-or-sdist) and [wheel](https://packaging.python.org/glossary/#term-Built-Distribution) packages, then publish the release to PyPI:
 
 ```sh
-python3 -c "import shutil; shutil.rmtree('dist', ignore_errors=True)"
-
-python3 -m build
-
-python3 -m twine check --strict dist/*
-```
-
-Publish the release to PyPI:
-
-```sh
-python3 -m twine upload dist/*
+tox -e release
 ```
 
 Push the release tag to GitHub:
