@@ -1,15 +1,5 @@
 """
 Display Zsh key bindings in more human-readable formats.
-
-By default, this runs `bindkey -L` in a Zsh subprocess, and displays key bindings sorted
-by widget (i.e. function). It can also read from standard input, which is faster, and
-enables displaying the current shell configuration:
-
-    bindkey -L | python3 zkeys.py -
-
-To learn about Zsh key bindings, see:
-https://zsh.sourceforge.io/Doc/Release/Zsh-Line-Editor.html#Zle-Widgets
-https://zsh.sourceforge.io/Doc/Release/User-Contributions.html#Widgets
 """
 import argparse
 import re
