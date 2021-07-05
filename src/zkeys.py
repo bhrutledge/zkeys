@@ -21,7 +21,7 @@ from typing import Dict, Iterable, List, Tuple
 
 try:
     __version__ = metadata.version("zkeys")
-except metadata.PackageNotFoundError:
+except metadata.PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
 
@@ -74,14 +74,14 @@ def main() -> None:
 
         for widget, bindings in sorted(widgets.items()):
             strings = (b.string for b in bindings)
-            print(f"{widget:40}{''.join(f'{s:8}' for s in strings)}")
+            print(f"{widget:40}{''.join(f'{s:8}' for s in strings)}".strip())
 
     elif args.prefix:
         prefixes = group_bindings(bindings, key="prefix")
 
         for prefix, bindings in prefixes.items():
             keys = (b.key for b in bindings)
-            print(f"{prefix:8}{' '.join(keys)}")
+            print(f"{prefix:8}{' '.join(keys)}".strip())
 
     else:
         if not args.string:
@@ -180,5 +180,5 @@ def group_bindings(
     return group
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

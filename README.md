@@ -22,12 +22,12 @@ Run `zkeys -h` to see usage.
 
 Install [tox](https://tox.readthedocs.io/).
 
-Run the linters, type checks, and tests on all supported Python versions, or a specific version:
+Run the linters, type checks, tests, and coverage on all supported Python versions, or a specific version:
 
 ```sh
 tox
 
-tox -e py38
+tox -e py38,coverage
 ```
 
 Auto-format the code:
