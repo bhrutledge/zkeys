@@ -50,11 +50,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # TODO: Refactor into functions for each option
-    # TODO: Show human-readable keys, e.g. Esc instead of ^[
-    # TODO: Indicate non-printing characters, e.g. space
-    # TODO: Use a PyPI package for table output, e.g. rich
-
     lines = (line.strip() for line in args.file) if args.file else run_bindkey()
     bindings = sorted(parse_bindkey(lines))
 
@@ -154,8 +149,6 @@ def run_bindkey() -> Iterable[str]:
 
 def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
     """Parse lines like 'bindkey "^[b" backward-word' into Keybinding objects."""
-    # TODO: Maybe move logic to a classmethod, e.g. Keybinding.from_bindkey(line)
-    # TODO: Parse other types of bindings, e.g. -s
     pattern = r'bindkey "(?P<in_string>.+)" (?P<widget>.+)'
 
     for line in lines:
