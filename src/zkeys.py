@@ -1,6 +1,4 @@
-"""
-Display Zsh key bindings in more human-readable formats.
-"""
+"""Display Zsh key bindings in more human-readable formats."""
 import argparse
 import re
 import subprocess
@@ -52,9 +50,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # TODO: Refactor into functions for each option
     # TODO: Show human-readable keys, e.g. Esc instead of ^[
-    # TODO: Indicate non-printing characters (e.g. space)
-    # TODO: Use a PyPI package for table output
+    # TODO: Indicate non-printing characters, e.g. space
+    # TODO: Use a PyPI package for table output, e.g. rich
 
     lines = (line.strip() for line in args.file) if args.file else run_bindkey()
     bindings = sorted(parse_bindkey(lines))
@@ -67,7 +66,7 @@ def main() -> None:
             print(f"{widget:40}{''.join(f'{s:8}' for s in strings)}".strip())
 
     elif args.prefix:
-        prefixes = group_bindings(bindings, key="prefix")
+        prefixes = group_bindings(bindings, attr="prefix")
 
         for prefix, bindings in prefixes.items():
             keys = (b.key for b in bindings)
@@ -110,6 +109,20 @@ IGNORE_WIDGETS = {
 
 @dataclass
 class Keybinding:
+    """
+    Map an input string like '^[b' to a ZLE widget like 'backward-word'.
+
+    >>> binding = Keybinding('^[b', 'backward-word')
+    >>> binding.string
+    '^[b'
+    >>> binding.prefix
+    '^['
+    >>> binding.key
+    'b'
+    >>> binding.widget
+    'backward-word'
+    """
+
     string: str
     widget: str
 
@@ -123,6 +136,7 @@ class Keybinding:
 
     @property
     def _compare_string(self) -> Tuple[int, str]:
+        """Compare by prefix rank, then by key."""
         return (PREFIXES.get(self.prefix, 999), self.key.upper())
 
     def __lt__(self, other: "Keybinding") -> bool:
@@ -139,7 +153,8 @@ def run_bindkey() -> Iterable[str]:
 
 
 def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
-    # bindkey "^A" beginning-of-line
+    """Parse lines like 'bindkey "^[b" backward-word' into Keybinding objects."""
+    # TODO: Maybe move logic to a classmethod, e.g. Keybinding.from_bindkey(line)
     # TODO: Parse other types of bindings, e.g. -s
     pattern = r'bindkey "(?P<string>.+)" (?P<widget>.+)'
 
@@ -160,12 +175,11 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
 def group_bindings(
     bindings: Iterable[Keybinding],
     *,
-    key: str = "widget",
+    attr: str = "widget",
 ) -> Dict[str, List[Keybinding]]:
-
     group: Dict[str, List[Keybinding]] = defaultdict(list)
     for binding in bindings:
-        group[getattr(binding, key)].append(binding)
+        group[getattr(binding, attr)].append(binding)
 
     return group
 

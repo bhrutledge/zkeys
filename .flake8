@@ -1,3 +1,6 @@
 [flake8]
 # Matching black's default
 max-line-length = 88
+extend-ignore =
+    # Don't require docstrings, but check them if they exist
+    D1
