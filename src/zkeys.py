@@ -31,8 +31,8 @@ def main() -> None:
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "-s",
-        "--string",
+        "-i",
+        "--in-string",
         action="store_true",
         help="sort by in-string instead of widget",
     )
@@ -62,22 +62,22 @@ def main() -> None:
         widgets = group_bindings(bindings)
 
         for widget, bindings in sorted(widgets.items()):
-            strings = (b.string for b in bindings)
-            print(f"{widget:40}{''.join(f'{s:8}' for s in strings)}".strip())
+            in_strings = "".join(f"{b.in_string:8}" for b in bindings)
+            print(f"{widget:40}{in_strings}".strip())
 
     elif args.prefix:
         prefixes = group_bindings(bindings, attr="prefix")
 
         for prefix, bindings in prefixes.items():
-            keys = (b.key for b in bindings)
-            print(f"{prefix:8}{' '.join(keys)}".strip())
+            keys = " ".join(b.key for b in bindings)
+            print(f"{prefix:8}{keys}".strip())
 
     else:
-        if not args.string:
+        if not args.in_string:
             bindings = sorted(bindings, key=lambda b: b.widget)
 
         for binding in bindings:
-            print(f"{binding.string:10}{binding.widget}")
+            print(f"{binding.in_string:10}{binding.widget}")
 
 
 PREFIXES = {
@@ -110,10 +110,10 @@ IGNORE_WIDGETS = {
 @dataclass
 class Keybinding:
     """
-    Map an input string like '^[b' to a ZLE widget like 'backward-word'.
+    Map an in-string like '^[b' to a ZLE widget like 'backward-word'.
 
     >>> binding = Keybinding('^[b', 'backward-word')
-    >>> binding.string
+    >>> binding.in_string
     '^[b'
     >>> binding.prefix
     '^['
@@ -123,16 +123,16 @@ class Keybinding:
     'backward-word'
     """
 
-    string: str
+    in_string: str
     widget: str
 
     @property
     def prefix(self) -> str:
-        return self.string[:-1]
+        return self.in_string[:-1]
 
     @property
     def key(self) -> str:
-        return self.string[-1]
+        return self.in_string[-1]
 
     @property
     def _compare_string(self) -> Tuple[int, str]:
@@ -156,20 +156,20 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
     """Parse lines like 'bindkey "^[b" backward-word' into Keybinding objects."""
     # TODO: Maybe move logic to a classmethod, e.g. Keybinding.from_bindkey(line)
     # TODO: Parse other types of bindings, e.g. -s
-    pattern = r'bindkey "(?P<string>.+)" (?P<widget>.+)'
+    pattern = r'bindkey "(?P<in_string>.+)" (?P<widget>.+)'
 
     for line in lines:
         if not (match := re.match(pattern, line)):
             continue
 
-        string, widget = match.groups()
+        in_string, widget = match.groups()
         if widget in IGNORE_WIDGETS:
             continue
 
         # HACK: Remove slashes for readability, e.g. \M-\$ becomes M-$
         # Could be overzealous, esp. with custom keybindings
-        string = string.replace("\\", "")
-        yield Keybinding(string, widget)
+        in_string = in_string.replace("\\", "")
+        yield Keybinding(in_string, widget)
 
 
 def group_bindings(

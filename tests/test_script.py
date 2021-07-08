@@ -81,7 +81,7 @@ bindkey "\M-q" push-line
             id="sorted_by_widget",
         ),
         pytest.param(
-            ["-s"],
+            ["-i"],
             """
             ^@        set-mark-command
             ^L        clear-screen
