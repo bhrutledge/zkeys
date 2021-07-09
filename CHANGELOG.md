@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Type checking, linting, and formatting
 - Integration tests and coverage
 - Development environment and release management with tox
-- Continuous integration workflow with GitHub Actions
+- Continuous integration and release workflow with GitHub Actions
 
 ## Changed
 

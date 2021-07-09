@@ -42,6 +42,8 @@ Every push and pull request is tested on all supported plaforms via [GitHub Acti
 
 ## Releasing
 
+Create a [PyPI API token](https://pypi.org/manage/account/#api-tokens) for this project, and add it to a [GitHub Actions repository secret](https://github.com/bhrutledge/zkeys/settings/secrets/actions) named `PYPI_TOKEN`.
+
 Choose a version number:
 
 ```sh
@@ -62,10 +64,6 @@ git tag -m "Release $version" $version
 git push origin main $version
 ```
 
-Wait for the [GitHub Actions workflow](https://github.com/bhrutledge/zkeys/actions/workflows/main.yml) to succeed.
+Watch the release on [GitHub Actions](https://github.com/bhrutledge/zkeys/actions/workflows/main.yml).
 
-Create the [source distribution](https://packaging.python.org/glossary/#term-Source-Distribution-or-sdist) and [wheel](https://packaging.python.org/glossary/#term-Built-Distribution) packages, then publish the release to PyPI:
-
-```sh
-tox -e release
-```
+View the release on [PyPI](https://pypi.org/project/zkeys/).
