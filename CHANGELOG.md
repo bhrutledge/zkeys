@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Development environment and release management with tox
 - Continuous integration workflow with GitHub Actions
 
-## Changed
+### Changed
 
 - Expand usage and contributing documentation
 
