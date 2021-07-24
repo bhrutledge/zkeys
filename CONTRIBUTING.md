@@ -77,3 +77,6 @@ To publish to [TestPyPI](https://packaging.python.org/guides/using-testpypi/) in
 ```sh
 TWINE_REPOSITORY=testpypi tox -e release
 ```
+
+Create a [GitHub Release](https://github.com/bhrutledge/zkeys/releases) with a link to the [release on PyPI](https://pypi.org/project/zkeys/#history), and the heading in the [changelog](CHANGELOG.md).
+
