@@ -6,19 +6,27 @@ Suggestions, questions, and bug reports are welcome on the [issue tracker](https
 
 Install [tox](https://tox.readthedocs.io/).
 
-Run the linters, type checks, tests, and coverage on all supported Python versions (see the [tox configuration](./tox.ini) for the list):
+Run the linters, type checks, tests, and coverage on all supported Python versions:
 
 ```sh
 tox
 ```
 
-- This requires having multiple versions of Python installed on your system; [pyenv](https://github.com/pyenv/pyenv) is a good tool for that.
+- This requires having multiple versions of Python installed on your system; [pyenv](https://github.com/pyenv/pyenv) is a good tool for that
+- This will run:
+    - [isort](https://pycqa.github.io/isort/) and [black](https://black.readthedocs.io/en/stable/) to format the code
+    - [flake8](http://flake8.pycqa.org/en/latest/) to check code and docstring style
+    - [mypy](https://mypy.readthedocs.io/en/latest/) to check types
+    - [pytest](https://docs.pytest.org/en/latest/) and [coverage.py](https://coverage.readthedocs.io/en/latest/) to run the tests
+-  See the [tox configuration](tox.ini) for details
 
-Run the linters, type checks, tests, and coverage in the current Python environment (e.g. via [`pyenv local`](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-local)):
+Run the linters, type checks, tests, and coverage in the current Python environment:
 
 ```sh
 tox -e py,coverage
 ```
+
+- Consider using [`pyenv local`](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-local) to set the desired Python version
 
 Auto-format the code:
 
