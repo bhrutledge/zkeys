@@ -6,13 +6,17 @@ Suggestions, questions, and bug reports are welcome on the [issue tracker](https
 
 Install [tox](https://tox.readthedocs.io/).
 
-Run the linters, type checks, tests, and coverage:
+Run the linters, type checks, tests, and coverage on all supported Python versions (see the [tox configuration](./tox.ini) for the list):
 
 ```sh
-# On all supported Python versions
 tox
+```
 
-# In the current Python environment
+- This requires having multiple versions of Python installed on your system; [pyenv](https://github.com/pyenv/pyenv) is a good tool for that.
+
+Run the linters, type checks, tests, and coverage in the current Python environment (e.g. via [`pyenv local`](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md#pyenv-local)):
+
+```sh
 tox -e py,coverage
 ```
 
@@ -72,11 +76,11 @@ Create the [source distribution](https://packaging.python.org/glossary/#term-Sou
 tox -e release
 ```
 
-To publish to [TestPyPI](https://packaging.python.org/guides/using-testpypi/) instead:
+- To publish to [TestPyPI](https://packaging.python.org/guides/using-testpypi/) instead:
 
-```sh
-TWINE_REPOSITORY=testpypi tox -e release
-```
+  ```sh
+  TWINE_REPOSITORY=testpypi tox -e release
+  ```
 
 Create a [GitHub Release](https://github.com/bhrutledge/zkeys/releases) with a link to the [release on PyPI](https://pypi.org/project/zkeys/#history), and the heading in the [changelog](CHANGELOG.md).
 
