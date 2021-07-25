@@ -57,7 +57,7 @@ def main() -> None:
         widgets = group_bindings(bindings)
 
         for widget, bindings in sorted(widgets.items()):
-            in_strings = "".join(f"{b.in_string:8}" for b in bindings)
+            in_strings = " ".join(f"{b.in_string:7}" for b in bindings)
             print(f"{widget:40}{in_strings}".strip())
 
     elif args.prefix:
@@ -67,11 +67,12 @@ def main() -> None:
             keys = " ".join(b.key for b in bindings)
             print(f"{prefix:8}{keys}".strip())
 
-    else:
-        if not args.in_string:
-            bindings = sorted(bindings, key=lambda b: b.widget)
-
+    elif args.in_string:
         for binding in bindings:
+            print(f"{binding.in_string:10}{binding.widget}")
+
+    else:
+        for binding in sorted(bindings, key=lambda b: b.widget):
             print(f"{binding.in_string:10}{binding.widget}")
 
 
