@@ -67,10 +67,10 @@ def main() -> None:
         prefixes = group_bindings(
             sorted(bindings),
             key_attr="prefix",
-            value_attr="key",
+            value_attr="character",
         )
-        for prefix, keys in prefixes.items():
-            print(f"{prefix:8}{' '.join(keys)}".strip())
+        for prefix, characters in prefixes.items():
+            print(f"{prefix:8}{' '.join(characters)}".strip())
 
     elif args.in_string:
         for binding in sorted(bindings):
@@ -118,7 +118,7 @@ class Keybinding:
     '^[b'
     >>> binding.prefix
     '^['
-    >>> binding.key
+    >>> binding.character
     'b'
     >>> binding.widget
     'backward-word'
@@ -132,13 +132,13 @@ class Keybinding:
         return self.in_string[:-1]
 
     @property
-    def key(self) -> str:
+    def character(self) -> str:
         return self.in_string[-1]
 
     @property
     def rank(self) -> Tuple[int, str]:
         prefix_rank = PREFIXES.get(self.prefix, 999)
-        return (prefix_rank, self.key.upper())
+        return (prefix_rank, self.character.upper())
 
     def __lt__(self, other: "Keybinding") -> bool:
         return self.rank < other.rank
@@ -175,7 +175,7 @@ def group_bindings(
     bindings: Iterable[Keybinding],
     *,
     key_attr: Literal["widget", "prefix"],
-    value_attr: Literal["in_string", "key"],
+    value_attr: Literal["in_string", "character"],
 ) -> Dict[str, List[str]]:
     """"""
     group: Dict[str, List[str]] = defaultdict(list)
