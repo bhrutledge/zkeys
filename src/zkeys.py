@@ -5,7 +5,7 @@ import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
 from importlib import metadata
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Literal, Tuple
 
 try:
     __version__ = metadata.version("zkeys")
@@ -51,28 +51,33 @@ def main() -> None:
     args = parser.parse_args()
 
     lines = (line.strip() for line in args.file) if args.file else run_bindkey()
-    bindings = sorted(parse_bindkey(lines))
+    bindings = parse_bindkey(lines)
 
     if args.widget:
-        widgets = group_bindings(bindings)
-
-        for widget, bindings in sorted(widgets.items()):
-            in_strings = " ".join(f"{b.in_string:7}" for b in bindings)
-            print(f"{widget:40}{in_strings}".strip())
+        widgets = group_bindings(
+            sorted(bindings, key=lambda b: (b.widget, b.rank)),
+            key_attr="widget",
+            value_attr="in_string",
+        )
+        for widget, in_strings in widgets.items():
+            in_strings = [f"{in_string:7}" for in_string in in_strings]
+            print(f"{widget:40}{' '.join(in_strings)}".strip())
 
     elif args.prefix:
-        prefixes = group_bindings(bindings, attr="prefix")
-
-        for prefix, bindings in prefixes.items():
-            keys = " ".join(b.key for b in bindings)
-            print(f"{prefix:8}{keys}".strip())
+        prefixes = group_bindings(
+            sorted(bindings),
+            key_attr="prefix",
+            value_attr="key",
+        )
+        for prefix, keys in prefixes.items():
+            print(f"{prefix:8}{' '.join(keys)}".strip())
 
     elif args.in_string:
-        for binding in bindings:
+        for binding in sorted(bindings):
             print(f"{binding.in_string:10}{binding.widget}")
 
     else:
-        for binding in sorted(bindings, key=lambda b: b.widget):
+        for binding in sorted(bindings, key=lambda b: (b.widget, b.rank)):
             print(f"{binding.in_string:10}{binding.widget}")
 
 
@@ -131,12 +136,12 @@ class Keybinding:
         return self.in_string[-1]
 
     @property
-    def _compare_string(self) -> Tuple[int, str]:
-        """Compare by prefix rank, then by key."""
-        return (PREFIXES.get(self.prefix, 999), self.key.upper())
+    def rank(self) -> Tuple[int, str]:
+        prefix_rank = PREFIXES.get(self.prefix, 999)
+        return (prefix_rank, self.key.upper())
 
     def __lt__(self, other: "Keybinding") -> bool:
-        return self._compare_string < other._compare_string
+        return self.rank < other.rank
 
 
 def run_bindkey() -> Iterable[str]:
@@ -169,11 +174,14 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
 def group_bindings(
     bindings: Iterable[Keybinding],
     *,
-    attr: str = "widget",
-) -> Dict[str, List[Keybinding]]:
-    group: Dict[str, List[Keybinding]] = defaultdict(list)
+    key_attr: Literal["widget", "prefix"],
+    value_attr: Literal["in_string", "key"],
+) -> Dict[str, List[str]]:
+    """"""
+    group: Dict[str, List[str]] = defaultdict(list)
+
     for binding in bindings:
-        group[getattr(binding, attr)].append(binding)
+        group[getattr(binding, key_attr)].append(getattr(binding, value_attr))
 
     return group
 
