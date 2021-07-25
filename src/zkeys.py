@@ -65,7 +65,7 @@ def main() -> None:
 
     elif args.prefix:
         prefixes = group_bindings(
-            sorted(bindings),
+            sorted(bindings, key=lambda b: b.rank),
             key_attr="prefix",
             value_attr="character",
         )
@@ -73,7 +73,7 @@ def main() -> None:
             print(f"{prefix:8}{' '.join(characters)}".strip())
 
     elif args.in_string:
-        for binding in sorted(bindings):
+        for binding in sorted(bindings, key=lambda b: b.rank):
             print(f"{binding.in_string:10}{binding.widget}")
 
     else:
@@ -139,9 +139,6 @@ class Keybinding:
     def rank(self) -> Tuple[int, str]:
         prefix_rank = PREFIXES.get(self.prefix, 999)
         return (prefix_rank, self.character.upper())
-
-    def __lt__(self, other: "Keybinding") -> bool:
-        return self.rank < other.rank
 
 
 def run_bindkey() -> Iterable[str]:
