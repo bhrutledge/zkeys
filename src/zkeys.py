@@ -55,7 +55,7 @@ def main() -> None:
 
     if args.widget:
         widgets = group_bindings(
-            sorted(bindings, key=lambda b: (b.widget, b.rank)),
+            sorted(bindings, key=Keybinding.widget_comparison),
             key_attr="widget",
             value_attr="in_string",
         )
@@ -65,7 +65,7 @@ def main() -> None:
 
     elif args.prefix:
         prefixes = group_bindings(
-            sorted(bindings, key=lambda b: b.rank),
+            sorted(bindings, key=Keybinding.prefix_comparison),
             key_attr="prefix",
             value_attr="character",
         )
@@ -73,11 +73,11 @@ def main() -> None:
             print(f"{prefix:8}{' '.join(characters)}".strip())
 
     elif args.in_string:
-        for binding in sorted(bindings, key=lambda b: b.rank):
+        for binding in sorted(bindings, key=Keybinding.prefix_comparison):
             print(f"{binding.in_string:10}{binding.widget}")
 
     else:
-        for binding in sorted(bindings, key=lambda b: (b.widget, b.rank)):
+        for binding in sorted(bindings, key=Keybinding.widget_comparison):
             print(f"{binding.in_string:10}{binding.widget}")
 
 
@@ -135,10 +135,12 @@ class Keybinding:
     def character(self) -> str:
         return self.in_string[-1]
 
-    @property
-    def rank(self) -> Tuple[int, str]:
+    def prefix_comparison(self) -> Tuple[int, str]:
         prefix_rank = PREFIXES.get(self.prefix, 999)
         return (prefix_rank, self.character.upper())
+
+    def widget_comparison(self) -> Tuple[str, int, str]:
+        return (self.widget, *self.prefix_comparison())
 
 
 def run_bindkey() -> Iterable[str]:
