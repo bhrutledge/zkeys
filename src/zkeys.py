@@ -13,6 +13,66 @@ except metadata.PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
 
+@dataclass
+class Keybinding:
+    """
+    Map an in-string like '^[b' to a ZLE widget like 'backward-word'.
+
+    >>> binding = Keybinding('^[b', 'backward-word')
+    >>> binding.in_string
+    '^[b'
+    >>> binding.prefix
+    '^['
+    >>> binding.character
+    'b'
+    >>> binding.widget
+    'backward-word'
+    """
+
+    in_string: str
+    widget: str
+
+    PREFIXES = {
+        prefix: rank
+        for rank, prefix in enumerate(
+            [
+                "^",
+                "^[",
+                "^[^",
+                "M-",
+                "M-^",
+                "^X",
+                "^X^",
+                "^[[",
+                "^[O",
+                "^[[3",
+            ]
+        )
+    }
+
+    IGNORE_WIDGETS = {
+        "bracketed-paste",
+        "digit-argument",
+        "neg-argument",
+        "self-insert-unmeta",
+    }
+
+    @property
+    def prefix(self) -> str:
+        return self.in_string[:-1]
+
+    @property
+    def character(self) -> str:
+        return self.in_string[-1]
+
+    def prefix_comparison(self) -> Tuple[int, str]:
+        prefix_rank = self.PREFIXES.get(self.prefix, 999)
+        return (prefix_rank, self.character.upper())
+
+    def widget_comparison(self) -> Tuple[str, int, str]:
+        return (self.widget, *self.prefix_comparison())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
@@ -85,68 +145,6 @@ def main() -> None:
             print(f"{binding.in_string:{in_string_width}}{binding.widget}")
 
 
-PREFIXES = {
-    prefix: rank
-    for rank, prefix in enumerate(
-        [
-            "^",
-            "^[",
-            "^[^",
-            "M-",
-            "M-^",
-            "^X",
-            "^X^",
-            "^[[",
-            "^[O",
-            "^[[3",
-        ]
-    )
-}
-
-
-IGNORE_WIDGETS = {
-    "bracketed-paste",
-    "digit-argument",
-    "neg-argument",
-    "self-insert-unmeta",
-}
-
-
-@dataclass
-class Keybinding:
-    """
-    Map an in-string like '^[b' to a ZLE widget like 'backward-word'.
-
-    >>> binding = Keybinding('^[b', 'backward-word')
-    >>> binding.in_string
-    '^[b'
-    >>> binding.prefix
-    '^['
-    >>> binding.character
-    'b'
-    >>> binding.widget
-    'backward-word'
-    """
-
-    in_string: str
-    widget: str
-
-    @property
-    def prefix(self) -> str:
-        return self.in_string[:-1]
-
-    @property
-    def character(self) -> str:
-        return self.in_string[-1]
-
-    def prefix_comparison(self) -> Tuple[int, str]:
-        prefix_rank = PREFIXES.get(self.prefix, 999)
-        return (prefix_rank, self.character.upper())
-
-    def widget_comparison(self) -> Tuple[str, int, str]:
-        return (self.widget, *self.prefix_comparison())
-
-
 def run_bindkey() -> Iterable[str]:
     result = subprocess.run(
         ["zsh", "--login", "--interactive", "-c", "bindkey -L"],
@@ -165,7 +163,7 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
             continue
 
         in_string, widget = match.groups()
-        if widget in IGNORE_WIDGETS:
+        if widget in Keybinding.IGNORE_WIDGETS:
             continue
 
         # HACK: Remove slashes for readability, e.g. \M-\$ becomes M-$
