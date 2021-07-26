@@ -106,13 +106,13 @@ bindkey "\M-q" push-line
             ["-w"],
             """
             _complete_debug         ^X?
-            clear-screen            ^L       ^[^L
+            clear-screen            ^L   ^[^L
             down-line-or-history    ^[[B
-            push-line               ^Q       ^[Q      ^[q      M-Q      M-q
+            push-line               ^Q   ^[Q  ^[q  M-Q  M-q
             quote-line              ^['
             quote-region            ^["
             set-mark-command        ^@
-            undo                    ^_       ^Xu      ^X^U
+            undo                    ^_   ^Xu  ^X^U
             up-line-or-history      ^[[A
             """,
             id="grouped_by_widget",

@@ -114,16 +114,16 @@ def main() -> None:
     bindings = list(parse_bindkey(input_lines))
 
     if args.widget:
-        output_lines = group_by_widget(bindings)
+        records = group_by_widget(bindings)
     elif args.prefix:
-        output_lines = group_by_prefix(bindings)
+        records = group_by_prefix(bindings)
     elif args.in_string:
-        output_lines = sort_by_in_string(bindings)
+        records = sort_by_in_string(bindings)
     else:
-        output_lines = sort_by_widget(bindings)
+        records = sort_by_widget(bindings)
 
-    for line in output_lines:
-        print(line)
+    for output_line in format_table(records):
+        print(output_line)
 
 
 def run_bindkey() -> Iterable[str]:
@@ -153,46 +153,36 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
         yield Keybinding(in_string, widget)
 
 
-def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[str]:
+def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
     widgets = group_bindings(
         sorted(bindings, key=Keybinding.widget_comparison),
         key_attr="widget",
         value_attr="in_string",
     )
-
-    widget_width = max(len(b.widget) for b in bindings) + 4
-    in_string_width = max(len(b.in_string) for b in bindings) + 4
-
-    for widget, in_strings in widgets.items():
-        in_strings = [f"{s:{in_string_width}}" for s in in_strings]
-        yield f"{widget:{widget_width}}{' '.join(in_strings).strip()}"
+    return widgets.items()
 
 
-def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[str]:
+def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
     prefixes = group_bindings(
         sorted(bindings, key=Keybinding.prefix_comparison),
         key_attr="prefix",
         value_attr="character",
     )
-
-    prefix_width = max(len(b.prefix) for b in bindings) + 4
-
-    for prefix, characters in prefixes.items():
-        yield f"{prefix:{prefix_width}}{' '.join(characters).strip()}"
+    return prefixes.items()
 
 
-def sort_by_in_string(bindings: Iterable[Keybinding]) -> Iterable[str]:
-    in_string_width = max(len(b.in_string) for b in bindings) + 4
+def sort_by_in_string(bindings: Iterable[Keybinding]) -> List[Tuple[str, List[str]]]:
+    return [
+        (binding.in_string, [binding.widget])
+        for binding in sorted(bindings, key=Keybinding.prefix_comparison)
+    ]
 
-    for binding in sorted(bindings, key=Keybinding.prefix_comparison):
-        yield f"{binding.in_string:{in_string_width}}{binding.widget}"
 
-
-def sort_by_widget(bindings: Iterable[Keybinding]) -> Iterable[str]:
-    in_string_width = max(len(b.in_string) for b in bindings) + 4
-
-    for binding in sorted(bindings, key=Keybinding.widget_comparison):
-        yield f"{binding.in_string:{in_string_width}}{binding.widget}"
+def sort_by_widget(bindings: Iterable[Keybinding]) -> List[Tuple[str, List[str]]]:
+    return [
+        (binding.in_string, [binding.widget])
+        for binding in sorted(bindings, key=Keybinding.widget_comparison)
+    ]
 
 
 def group_bindings(
@@ -208,6 +198,15 @@ def group_bindings(
         group[getattr(binding, key_attr)].append(getattr(binding, value_attr))
 
     return group
+
+
+def format_table(records: Iterable[Tuple[str, List[str]]]) -> Iterable[str]:
+    key_width = max(len(k) for k, _ in records) + 4
+    value_width = max(len(v) for _, values in records for v in values)
+
+    for key, values in records:
+        values = [f"{v:{value_width}}" for v in values]
+        yield f"{key:{key_width}}{' '.join(values).strip()}"
 
 
 if __name__ == "__main__":  # pragma: no cover
