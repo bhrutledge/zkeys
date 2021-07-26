@@ -5,7 +5,7 @@ import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
 from importlib import metadata
-from typing import Dict, Iterable, List, Literal, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 try:
     __version__ = metadata.version("zkeys")
@@ -154,20 +154,20 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
 
 
 def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
-    widgets = group_bindings(
-        sorted(bindings, key=Keybinding.widget_comparison),
-        key_attr="widget",
-        value_attr="in_string",
-    )
+    widgets: Dict[str, List[str]] = defaultdict(list)
+
+    for binding in sorted(bindings, key=Keybinding.widget_comparison):
+        widgets[binding.widget].append(binding.in_string)
+
     return widgets.items()
 
 
 def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
-    prefixes = group_bindings(
-        sorted(bindings, key=Keybinding.prefix_comparison),
-        key_attr="prefix",
-        value_attr="character",
-    )
+    prefixes: Dict[str, List[str]] = defaultdict(list)
+
+    for binding in sorted(bindings, key=Keybinding.prefix_comparison):
+        prefixes[binding.prefix].append(binding.character)
+
     return prefixes.items()
 
 
@@ -183,21 +183,6 @@ def sort_by_widget(bindings: Iterable[Keybinding]) -> List[Tuple[str, List[str]]
         (binding.in_string, [binding.widget])
         for binding in sorted(bindings, key=Keybinding.widget_comparison)
     ]
-
-
-def group_bindings(
-    bindings: Iterable[Keybinding],
-    *,
-    key_attr: Literal["widget", "prefix"],
-    value_attr: Literal["in_string", "character"],
-) -> Dict[str, List[str]]:
-    """"""
-    group: Dict[str, List[str]] = defaultdict(list)
-
-    for binding in bindings:
-        group[getattr(binding, key_attr)].append(getattr(binding, value_attr))
-
-    return group
 
 
 def format_table(records: Iterable[Tuple[str, List[str]]]) -> Iterable[str]:
