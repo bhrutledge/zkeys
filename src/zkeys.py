@@ -51,7 +51,11 @@ def main() -> None:
     args = parser.parse_args()
 
     lines = (line.strip() for line in args.file) if args.file else run_bindkey()
-    bindings = parse_bindkey(lines)
+    bindings = list(parse_bindkey(lines))
+
+    widget_width = max(len(b.widget) for b in bindings) + 4
+    prefix_width = max(len(b.prefix) for b in bindings) + 4
+    in_string_width = max(len(b.in_string) for b in bindings) + 4
 
     if args.widget:
         widgets = group_bindings(
@@ -60,8 +64,8 @@ def main() -> None:
             value_attr="in_string",
         )
         for widget, in_strings in widgets.items():
-            in_strings = [f"{in_string:7}" for in_string in in_strings]
-            print(f"{widget:40}{' '.join(in_strings)}".strip())
+            in_strings = [f"{s:{in_string_width}}" for s in in_strings]
+            print(f"{widget:{widget_width}}{' '.join(in_strings).strip()}")
 
     elif args.prefix:
         prefixes = group_bindings(
@@ -70,15 +74,15 @@ def main() -> None:
             value_attr="character",
         )
         for prefix, characters in prefixes.items():
-            print(f"{prefix:8}{' '.join(characters)}".strip())
+            print(f"{prefix:{prefix_width}}{' '.join(characters).strip()}")
 
     elif args.in_string:
         for binding in sorted(bindings, key=Keybinding.prefix_comparison):
-            print(f"{binding.in_string:10}{binding.widget}")
+            print(f"{binding.in_string:{in_string_width}}{binding.widget}")
 
     else:
         for binding in sorted(bindings, key=Keybinding.widget_comparison):
-            print(f"{binding.in_string:10}{binding.widget}")
+            print(f"{binding.in_string:{in_string_width}}{binding.widget}")
 
 
 PREFIXES = {
