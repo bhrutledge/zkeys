@@ -73,6 +73,9 @@ class Keybinding:
         return (self.widget, *self.prefix_comparison())
 
 
+Row = Tuple[str, List[str]]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
@@ -114,15 +117,15 @@ def main() -> None:
     bindings = list(parse_bindkey(input_lines))
 
     if args.widget:
-        records = group_by_widget(bindings)
+        rows = group_by_widget(bindings)
     elif args.prefix:
-        records = group_by_prefix(bindings)
+        rows = group_by_prefix(bindings)
     elif args.in_string:
-        records = sort_by_in_string(bindings)
+        rows = sort_by_in_string(bindings)
     else:
-        records = sort_by_widget(bindings)
+        rows = sort_by_widget(bindings)
 
-    for output_line in format_table(records):
+    for output_line in format_table(rows):
         print(output_line)
 
 
@@ -153,7 +156,7 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
         yield Keybinding(in_string, widget)
 
 
-def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
+def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Row]:
     widgets: Dict[str, List[str]] = defaultdict(list)
 
     for binding in sorted(bindings, key=Keybinding.widget_comparison):
@@ -162,7 +165,7 @@ def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[
     return widgets.items()
 
 
-def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[str]]]:
+def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Row]:
     prefixes: Dict[str, List[str]] = defaultdict(list)
 
     for binding in sorted(bindings, key=Keybinding.prefix_comparison):
@@ -171,25 +174,25 @@ def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Tuple[str, List[
     return prefixes.items()
 
 
-def sort_by_in_string(bindings: Iterable[Keybinding]) -> List[Tuple[str, List[str]]]:
+def sort_by_in_string(bindings: Iterable[Keybinding]) -> List[Row]:
     return [
         (binding.in_string, [binding.widget])
         for binding in sorted(bindings, key=Keybinding.prefix_comparison)
     ]
 
 
-def sort_by_widget(bindings: Iterable[Keybinding]) -> List[Tuple[str, List[str]]]:
+def sort_by_widget(bindings: Iterable[Keybinding]) -> List[Row]:
     return [
         (binding.in_string, [binding.widget])
         for binding in sorted(bindings, key=Keybinding.widget_comparison)
     ]
 
 
-def format_table(records: Iterable[Tuple[str, List[str]]]) -> Iterable[str]:
-    key_width = max(len(k) for k, _ in records) + 4
-    value_width = max(len(v) for _, values in records for v in values)
+def format_table(rows: Iterable[Row]) -> Iterable[str]:
+    key_width = max(len(k) for k, _ in rows) + 4
+    value_width = max(len(v) for _, values in rows for v in values)
 
-    for key, values in records:
+    for key, values in rows:
         values = [f"{v:{value_width}}" for v in values]
         yield f"{key:{key_width}}{' '.join(values).strip()}"
 
