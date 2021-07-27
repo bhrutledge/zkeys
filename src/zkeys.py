@@ -57,6 +57,24 @@ class Keybinding:
         "self-insert-unmeta",
     }
 
+    @classmethod
+    def from_bindkey(cls, lines: Iterable[str]) -> Iterable["Keybinding"]:
+        """Parse lines like 'bindkey "^[b" backward-word' into Keybinding objects."""
+        pattern = r'bindkey "(?P<in_string>.+)" (?P<widget>.+)'
+
+        for line in lines:
+            if not (match := re.match(pattern, line)):
+                continue
+
+            in_string, widget = match.groups()
+            if widget in cls.IGNORE_WIDGETS:
+                continue
+
+            # HACK: Remove slashes for readability, e.g. \M-\$ becomes M-$
+            # Could be overzealous, esp. with custom keybindings
+            in_string = in_string.replace("\\", "")
+            yield cls(in_string, widget)
+
     @property
     def prefix(self) -> str:
         return self.in_string[:-1]
@@ -77,6 +95,7 @@ Row = Tuple[str, List[str]]
 
 
 def main() -> None:
+    """Process command-line arguments and print output."""
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -114,7 +133,7 @@ def main() -> None:
     args = parser.parse_args()
 
     input_lines = (line.strip() for line in args.file) if args.file else run_bindkey()
-    bindings = list(parse_bindkey(input_lines))
+    bindings = list(Keybinding.from_bindkey(input_lines))
 
     if args.widget:
         rows = group_by_widget(bindings)
@@ -136,24 +155,6 @@ def run_bindkey() -> Iterable[str]:
         text=True,
     )
     return result.stdout.splitlines()
-
-
-def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
-    """Parse lines like 'bindkey "^[b" backward-word' into Keybinding objects."""
-    pattern = r'bindkey "(?P<in_string>.+)" (?P<widget>.+)'
-
-    for line in lines:
-        if not (match := re.match(pattern, line)):
-            continue
-
-        in_string, widget = match.groups()
-        if widget in Keybinding.IGNORE_WIDGETS:
-            continue
-
-        # HACK: Remove slashes for readability, e.g. \M-\$ becomes M-$
-        # Could be overzealous, esp. with custom keybindings
-        in_string = in_string.replace("\\", "")
-        yield Keybinding(in_string, widget)
 
 
 def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Row]:
