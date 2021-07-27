@@ -13,6 +13,69 @@ except metadata.PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
 
+@dataclass
+class Keybinding:
+    """
+    Map an in-string like '^[b' to a ZLE widget like 'backward-word'.
+
+    >>> binding = Keybinding('^[b', 'backward-word')
+    >>> binding.in_string
+    '^[b'
+    >>> binding.prefix
+    '^['
+    >>> binding.character
+    'b'
+    >>> binding.widget
+    'backward-word'
+    """
+
+    in_string: str
+    widget: str
+
+    PREFIXES = {
+        prefix: rank
+        for rank, prefix in enumerate(
+            [
+                "^",
+                "^[",
+                "^[^",
+                "M-",
+                "M-^",
+                "^X",
+                "^X^",
+                "^[[",
+                "^[O",
+                "^[[3",
+            ]
+        )
+    }
+
+    IGNORE_WIDGETS = {
+        "bracketed-paste",
+        "digit-argument",
+        "neg-argument",
+        "self-insert-unmeta",
+    }
+
+    @property
+    def prefix(self) -> str:
+        return self.in_string[:-1]
+
+    @property
+    def character(self) -> str:
+        return self.in_string[-1]
+
+    def prefix_comparison(self) -> Tuple[int, str]:
+        prefix_rank = self.PREFIXES.get(self.prefix, 999)
+        return (prefix_rank, self.character.upper())
+
+    def widget_comparison(self) -> Tuple[str, int, str]:
+        return (self.widget, *self.prefix_comparison())
+
+
+Row = Tuple[str, List[str]]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
@@ -50,92 +113,20 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    lines = (line.strip() for line in args.file) if args.file else run_bindkey()
-    bindings = sorted(parse_bindkey(lines))
+    input_lines = (line.strip() for line in args.file) if args.file else run_bindkey()
+    bindings = list(parse_bindkey(input_lines))
 
     if args.widget:
-        widgets = group_bindings(bindings)
-
-        for widget, bindings in sorted(widgets.items()):
-            in_strings = "".join(f"{b.in_string:8}" for b in bindings)
-            print(f"{widget:40}{in_strings}".strip())
-
+        rows = group_by_widget(bindings)
     elif args.prefix:
-        prefixes = group_bindings(bindings, attr="prefix")
-
-        for prefix, bindings in prefixes.items():
-            keys = " ".join(b.key for b in bindings)
-            print(f"{prefix:8}{keys}".strip())
-
+        rows = group_by_prefix(bindings)
+    elif args.in_string:
+        rows = sort_by_in_string(bindings)
     else:
-        if not args.in_string:
-            bindings = sorted(bindings, key=lambda b: b.widget)
+        rows = sort_by_widget(bindings)
 
-        for binding in bindings:
-            print(f"{binding.in_string:10}{binding.widget}")
-
-
-PREFIXES = {
-    prefix: rank
-    for rank, prefix in enumerate(
-        [
-            "^",
-            "^[",
-            "^[^",
-            "M-",
-            "M-^",
-            "^X",
-            "^X^",
-            "^[[",
-            "^[O",
-            "^[[3",
-        ]
-    )
-}
-
-
-IGNORE_WIDGETS = {
-    "bracketed-paste",
-    "digit-argument",
-    "neg-argument",
-    "self-insert-unmeta",
-}
-
-
-@dataclass
-class Keybinding:
-    """
-    Map an in-string like '^[b' to a ZLE widget like 'backward-word'.
-
-    >>> binding = Keybinding('^[b', 'backward-word')
-    >>> binding.in_string
-    '^[b'
-    >>> binding.prefix
-    '^['
-    >>> binding.key
-    'b'
-    >>> binding.widget
-    'backward-word'
-    """
-
-    in_string: str
-    widget: str
-
-    @property
-    def prefix(self) -> str:
-        return self.in_string[:-1]
-
-    @property
-    def key(self) -> str:
-        return self.in_string[-1]
-
-    @property
-    def _compare_string(self) -> Tuple[int, str]:
-        """Compare by prefix rank, then by key."""
-        return (PREFIXES.get(self.prefix, 999), self.key.upper())
-
-    def __lt__(self, other: "Keybinding") -> bool:
-        return self._compare_string < other._compare_string
+    for output_line in format_table(rows):
+        print(output_line)
 
 
 def run_bindkey() -> Iterable[str]:
@@ -156,7 +147,7 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
             continue
 
         in_string, widget = match.groups()
-        if widget in IGNORE_WIDGETS:
+        if widget in Keybinding.IGNORE_WIDGETS:
             continue
 
         # HACK: Remove slashes for readability, e.g. \M-\$ becomes M-$
@@ -165,16 +156,45 @@ def parse_bindkey(lines: Iterable[str]) -> Iterable[Keybinding]:
         yield Keybinding(in_string, widget)
 
 
-def group_bindings(
-    bindings: Iterable[Keybinding],
-    *,
-    attr: str = "widget",
-) -> Dict[str, List[Keybinding]]:
-    group: Dict[str, List[Keybinding]] = defaultdict(list)
-    for binding in bindings:
-        group[getattr(binding, attr)].append(binding)
+def group_by_widget(bindings: Iterable[Keybinding]) -> Iterable[Row]:
+    widgets: Dict[str, List[str]] = defaultdict(list)
 
-    return group
+    for binding in sorted(bindings, key=Keybinding.widget_comparison):
+        widgets[binding.widget].append(binding.in_string)
+
+    return widgets.items()
+
+
+def group_by_prefix(bindings: Iterable[Keybinding]) -> Iterable[Row]:
+    prefixes: Dict[str, List[str]] = defaultdict(list)
+
+    for binding in sorted(bindings, key=Keybinding.prefix_comparison):
+        prefixes[binding.prefix].append(binding.character)
+
+    return prefixes.items()
+
+
+def sort_by_in_string(bindings: Iterable[Keybinding]) -> List[Row]:
+    return [
+        (binding.in_string, [binding.widget])
+        for binding in sorted(bindings, key=Keybinding.prefix_comparison)
+    ]
+
+
+def sort_by_widget(bindings: Iterable[Keybinding]) -> List[Row]:
+    return [
+        (binding.in_string, [binding.widget])
+        for binding in sorted(bindings, key=Keybinding.widget_comparison)
+    ]
+
+
+def format_table(rows: Iterable[Row]) -> Iterable[str]:
+    key_width = max(len(k) for k, _ in rows) + 4
+    value_width = max(len(v) for _, values in rows for v in values)
+
+    for key, values in rows:
+        values = [f"{v:{value_width}}" for v in values]
+        yield f"{key:{key_width}}{' '.join(values).strip()}"
 
 
 if __name__ == "__main__":  # pragma: no cover

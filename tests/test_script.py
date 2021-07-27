@@ -61,72 +61,72 @@ bindkey "\M-q" push-line
         pytest.param(
             [],
             """
-            ^X?       _complete_debug
-            ^L        clear-screen
-            ^[^L      clear-screen
-            ^[[B      down-line-or-history
-            ^Q        push-line
-            ^[Q       push-line
-            ^[q       push-line
-            M-Q       push-line
-            M-q       push-line
-            ^['       quote-line
-            ^["       quote-region
-            ^@        set-mark-command
-            ^_        undo
-            ^Xu       undo
-            ^X^U      undo
-            ^[[A      up-line-or-history
+            ^X?     _complete_debug
+            ^L      clear-screen
+            ^[^L    clear-screen
+            ^[[B    down-line-or-history
+            ^Q      push-line
+            ^[Q     push-line
+            ^[q     push-line
+            M-Q     push-line
+            M-q     push-line
+            ^['     quote-line
+            ^["     quote-region
+            ^@      set-mark-command
+            ^_      undo
+            ^Xu     undo
+            ^X^U    undo
+            ^[[A    up-line-or-history
             """,
             id="sorted_by_widget",
         ),
         pytest.param(
             ["-i"],
             """
-            ^@        set-mark-command
-            ^L        clear-screen
-            ^Q        push-line
-            ^_        undo
-            ^["       quote-region
-            ^['       quote-line
-            ^[Q       push-line
-            ^[q       push-line
-            ^[^L      clear-screen
-            M-Q       push-line
-            M-q       push-line
-            ^X?       _complete_debug
-            ^Xu       undo
-            ^X^U      undo
-            ^[[A      up-line-or-history
-            ^[[B      down-line-or-history
+            ^@      set-mark-command
+            ^L      clear-screen
+            ^Q      push-line
+            ^_      undo
+            ^["     quote-region
+            ^['     quote-line
+            ^[Q     push-line
+            ^[q     push-line
+            ^[^L    clear-screen
+            M-Q     push-line
+            M-q     push-line
+            ^X?     _complete_debug
+            ^Xu     undo
+            ^X^U    undo
+            ^[[A    up-line-or-history
+            ^[[B    down-line-or-history
             """,
             id="sorted_by_string",
         ),
         pytest.param(
             ["-w"],
             """
-            _complete_debug                         ^X?
-            clear-screen                            ^L      ^[^L
-            down-line-or-history                    ^[[B
-            push-line                               ^Q      ^[Q     ^[q     M-Q     M-q
-            quote-line                              ^['
-            quote-region                            ^["
-            set-mark-command                        ^@
-            undo                                    ^_      ^Xu     ^X^U
-            up-line-or-history                      ^[[A
+            _complete_debug         ^X?
+            clear-screen            ^L   ^[^L
+            down-line-or-history    ^[[B
+            push-line               ^Q   ^[Q  ^[q  M-Q  M-q
+            quote-line              ^['
+            quote-region            ^["
+            set-mark-command        ^@
+            undo                    ^_   ^Xu  ^X^U
+            up-line-or-history      ^[[A
             """,
             id="grouped_by_widget",
         ),
         pytest.param(
             ["-p"],
             """
-            ^       @ L Q _
-            ^[      " ' Q q
-            ^[^     L
-            M-      Q q
-            ^X      ? u
-            ^X^     U
-            ^[[     A B
+            ^      @ L Q _
+            ^[     " ' Q q
+            ^[^    L
+            M-     Q q
+            ^X     ? u
+            ^X^    U
+            ^[[    A B
             """,
             id="grouped_by_prefix",
         ),
